@@ -25,10 +25,31 @@ Para isso, três peças conversam entre si:
 
 ## Como funciona (arquitetura)
 
-```
-Nubank/Itaú --(Open Finance)--> Meu Pluggy --(consulta agendada)--> Lambda --> Notion API
-                                                    ^
-                                          EventBridge Rule (1x/dia)
+```mermaid
+flowchart LR
+    subgraph Bancos["Contas conectadas"]
+        NU[Nubank]
+        IT[Itaú]
+    end
+
+    subgraph AWS["AWS"]
+        EB(["EventBridge Rule\nrate(1 day)"])
+        LAMBDA["Lambda\nExpenseSyncFunction"]
+        CW[("CloudWatch Logs")]
+    end
+
+    MP["Pluggy API\n(conector Meu Pluggy)"]
+    NOTION[("Notion Database\n(via API)")]
+
+    NU -- Open Finance --> MP
+    IT -- Open Finance --> MP
+
+    EB -- dispara 1x/dia --> LAMBDA
+    LAMBDA -- 1 . busca transações\ndesde LOOKBACK_DAYS --> MP
+    MP -- transações\n(DEBIT + CREDIT) --> LAMBDA
+    LAMBDA -- 2 . filtra DEBIT,\nagrupa parcelas,\ndeduplica --> LAMBDA
+    LAMBDA -- 3 . cria página\n(pula se já existir) --> NOTION
+    LAMBDA -- logs de cada execução --> CW
 ```
 
 - A cada execução, a Lambda autentica na API da Pluggy, busca as
