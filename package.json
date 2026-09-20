@@ -2,6 +2,7 @@
   "name": "gastos-notion-tracker",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "description": "Lambda agendada que le transacoes do Nubank/Itau via Pluggy (Meu Pluggy) e registra no Notion.",
   "main": "src/handler.ts",
   "scripts": {
