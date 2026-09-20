@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sincroniza gastos do Nubank e Itau (via Meu Pluggy / Open Finance) com uma
+  base do Notion. Roda 1x/dia via EventBridge Scheduler, sem endpoint
+  publico (o tier gratuito da Pluggy nao expoe webhook).
+
+Parameters:
+  PluggyClientId:
+    Type: String
+    NoEcho: true
+    Description: Client ID do Meu Pluggy (dashboard).
+  PluggyClientSecret:
+    Type: String
+    NoEcho: true
+    Description: Client Secret do Meu Pluggy (dashboard).
+  PluggyItems:
+    Type: String
+    Description: >
+      Items conectados no formato "itemId:Banco:Cartao,...", ex:
+      "abc123:Nubank:CPF,def456:Nubank:CNPJ,ghi789:Itau:CPF". A parte
+      ":Cartao" e opcional.
+  NotionToken:
+    Type: String
+    NoEcho: true
+    Description: Token da integracao interna do Notion (Internal Integration Secret).
+  NotionDatabaseId:
+    Type: String
+    Description: ID do database "Gastos" no Notion.
+  LookbackDays:
+    Type: Number
+    Default: 1
+    Description: Quantos dias pra tras buscar transacoes a cada execucao (janela de seguranca).
+
+Resources:
+  ExpenseSyncFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: false
+        EntryPoints:
+          - handler.ts
+    Properties:
+      CodeUri: src/
+      Handler: handler.handler
+      Runtime: nodejs20.x
+      Timeout: 300
+      MemorySize: 256
+      Environment:
+        Variables:
+          PLUGGY_CLIENT_ID: !Ref PluggyClientId
+          PLUGGY_CLIENT_SECRET: !Ref PluggyClientSecret
+          PLUGGY_ITEMS: !Ref PluggyItems
+          NOTION_TOKEN: !Ref NotionToken
+          NOTION_DATABASE_ID: !Ref NotionDatabaseId
+          LOOKBACK_DAYS: !Ref LookbackDays
+      Events:
+        DailySync:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+            Name: gastos-notion-daily-sync
+            Description: Sincronizacao diaria de gastos Nubank/Itau -> Notion
+            Enabled: true
+
+Outputs:
+  FunctionName:
+    Description: Nome da funcao Lambda (use com `aws lambda invoke`).
+    Value: !Ref ExpenseSyncFunction
+  FunctionArn:
+    Description: ARN da funcao Lambda.
+    Value: !GetAtt ExpenseSyncFunction.Arn

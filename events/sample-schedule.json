@@ -1,0 +1,10 @@
+{
+  "id": "sample-event-id",
+  "detail-type": "Scheduled Event",
+  "source": "aws.scheduler",
+  "account": "123456789012",
+  "time": "2026-01-01T06:00:00Z",
+  "region": "us-east-1",
+  "resources": ["arn:aws:scheduler:us-east-1:123456789012:schedule/default/gastos-notion-daily-sync"],
+  "detail": {}
+}

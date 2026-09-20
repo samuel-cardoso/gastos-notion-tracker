@@ -1,0 +1,21 @@
+{
+  "name": "gastos-notion-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lambda agendada que le transacoes do Nubank/Itau via Pluggy (Meu Pluggy) e registra no Notion.",
+  "main": "src/handler.ts",
+  "scripts": {
+    "build": "sam build",
+    "invoke:local": "sam local invoke ExpenseSyncFunction --event events/sample-schedule.json --env-vars env.json"
+  },
+  "dependencies": {
+    "@notionhq/client": "^5.26.0",
+    "pluggy-sdk": "^0.85.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^20.14.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.0"
+  }
+}

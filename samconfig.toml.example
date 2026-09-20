@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "gastos-notion-tracker"
+resolve_s3 = true
+s3_prefix = "gastos-notion-tracker"
+region = "sa-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "PluggyItems=\"itemId1:Nubank:CPF,itemId2:Nubank:CNPJ\" NotionDatabaseId=\"seu-database-id\" LookbackDays=\"1\""
+image_repositories = []
+
+[default.global.parameters]
+region = "sa-east-1"
